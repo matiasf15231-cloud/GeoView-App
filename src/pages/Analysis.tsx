@@ -4,10 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UploadCloud } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
+import { showSuccess } from "@/utils/toast";
 
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
+  const { user, signInWithGoogle } = useAuth();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -18,6 +21,16 @@ const Analysis = () => {
         setFileName(file.name);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!user) {
+      await signInWithGoogle();
+    } else {
+      // Placeholder for actual analysis logic
+      showSuccess(`Hola ${user.email}! Listo para analizar la imagen.`);
+      console.log("User is logged in, proceeding with analysis...");
     }
   };
 
@@ -61,6 +74,7 @@ const Analysis = () => {
             <div className="text-center">
               <Button
                 disabled={!image}
+                onClick={handleAnalyze}
                 className="bg-[#00FF7F] text-[#0D0D0D] hover:bg-[#00FF7F]/80 rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)] disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 Analizar Imagen
