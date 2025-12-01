@@ -2,17 +2,22 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud, Home, Loader2 } from "lucide-react";
+import { UploadCloud, Home, Loader2, Cube } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface AnalysisResult {
+  description: string;
+  volumen_3d: any[];
+}
+
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { session, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -49,7 +54,7 @@ const Analysis = () => {
 
       if (error) throw error;
 
-      setAnalysisResult(data.description);
+      setAnalysisResult(data);
       showSuccess("Análisis completado.");
     } catch (error: any) {
       console.error("Error analyzing image:", error);
@@ -120,11 +125,17 @@ const Analysis = () => {
 
         {analysisResult && (
           <Card className="mt-8 bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
-            <CardHeader>
+            <CardHeader className="flex flex-row justify-between items-center">
               <CardTitle className="text-2xl text-[#00FF7F]">Resultado del Análisis</CardTitle>
+              <Link to="/vista3Danalisis" state={{ data: analysisResult.volumen_3d }}>
+                <Button variant="outline" className="bg-transparent border-[#00FF7F]/30 hover:bg-[#00FF7F]/10 text-gray-200">
+                  <Cube className="mr-2 h-4 w-4" />
+                  Ver en 3D
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-300 whitespace-pre-wrap">{analysisResult}</p>
+              <p className="text-gray-300 whitespace-pre-wrap">{analysisResult.description}</p>
             </CardContent>
           </Card>
         )}

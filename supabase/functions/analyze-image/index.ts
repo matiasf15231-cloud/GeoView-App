@@ -42,17 +42,35 @@ serve(async (req) => {
         throw new Error("La variable de entorno GEMINI_API_KEY no está configurada.");
     }
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = "Eres un experto en análisis de imágenes de georadar (GPR). Describe la siguiente imagen GPR en detalle. Identifica cualquier anomalía, capas del subsuelo u objetos potenciales de interés. Proporciona una interpretación clara y concisa para un no experto.";
+    const prompt = `
+      Eres un experto en análisis de imágenes de georadar (GPR). Analiza la siguiente imagen GPR.
+      Tu respuesta DEBE ser un objeto JSON con la siguiente estructura:
+      {
+        "description": "Una descripción detallada de la imagen, identificando anomalías, capas del subsuelo y objetos potenciales de interés. Proporciona una interpretación clara y concisa para un no experto.",
+        "volumen_3d": [
+          {
+            "type": "pipe" | "cavity" | "metal" | "cable" | "rock",
+            "position": { "x": number, "y": number, "z": number },
+            "size": { "width": number, "height": number, "depth": number }
+          }
+        ]
+      }
+      - Las coordenadas (x, y, z) y el tamaño (width, height, depth) deben ser valores numéricos entre 0 y 100, representando porcentajes relativos dentro del volumen total.
+      - 'x' es la posición horizontal, 'y' es la profundidad, y 'z' es la distancia desde el frente.
+      - Identifica al menos 3-5 objetos si es posible. Si no hay objetos claros, devuelve un array "volumen_3d" vacío.
+      - No incluyas nada más en tu respuesta, solo el objeto JSON.
+    `;
 
     const imagePart = dataUrlToGenerativePart(image);
 
     const result = await model.generateContent([prompt, imagePart]);
     const response = await result.response;
-    const description = response.text();
+    const jsonText = response.text().replace(/```json|```/g, '').trim();
+    const analysisData = JSON.parse(jsonText);
 
-    return new Response(JSON.stringify({ description }), {
+    return new Response(JSON.stringify(analysisData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
