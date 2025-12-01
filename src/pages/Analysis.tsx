@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud, Home, Loader2, Box } from "lucide-react";
+import { UploadCloud, Home, Loader2, Box, History as HistoryIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
@@ -15,6 +15,7 @@ interface AnalysisResult {
 
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -28,15 +29,53 @@ const Analysis = () => {
   }, [session, loading, navigate]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
-        setFileName(file.name);
-        setAnalysisResult(null); // Limpiar resultado anterior al subir nueva imagen
+        setAnalysisResult(null);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const saveAnalysis = async (result: AnalysisResult) => {
+    if (!file || !session?.user) return;
+
+    const toastId = showLoading("Guardando análisis en tu historial...");
+    try {
+      // 1. Subir imagen a Supabase Storage
+      const filePath = `${session.user.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('analysis_images')
+        .upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      // 2. Obtener la URL pública de la imagen
+      const { data: urlData } = supabase.storage
+        .from('analysis_images')
+        .getPublicUrl(filePath);
+      
+      // 3. Guardar los datos en la tabla 'analyses'
+      const newRecord = {
+        user_id: session.user.id,
+        file_name: file.name,
+        image_url: urlData.publicUrl,
+        description: result.description,
+        volumen_3d: result.volumen_3d,
+      };
+      const { error: insertError } = await supabase.from('analyses').insert([newRecord]);
+      if (insertError) throw insertError;
+
+      dismissToast(toastId);
+      showSuccess("Análisis guardado en tu historial.");
+    } catch (error: any) {
+      dismissToast(toastId);
+      showError(error.message || "No se pudo guardar el análisis.");
+      console.error("Error saving analysis:", error);
     }
   };
 
@@ -56,6 +95,7 @@ const Analysis = () => {
 
       setAnalysisResult(data);
       showSuccess("Análisis completado.");
+      await saveAnalysis(data); // Guardar el resultado
     } catch (error: any) {
       console.error("Error analyzing image:", error);
       showError(error.message || "Ocurrió un error durante el análisis.");
@@ -83,11 +123,18 @@ const Analysis = () => {
             <CardTitle className="text-3xl font-bold text-[#00FF7F]">
               Análisis de Imagen de Georadar
             </CardTitle>
-            <Link to="/">
-                <Button variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
-                    <Home className="h-5 w-5" />
-                </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/history">
+                  <Button variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
+                      <HistoryIcon className="h-5 w-5" />
+                  </Button>
+              </Link>
+              <Link to="/">
+                  <Button variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
+                      <Home className="h-5 w-5" />
+                  </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-8 flex flex-col items-center">
             
