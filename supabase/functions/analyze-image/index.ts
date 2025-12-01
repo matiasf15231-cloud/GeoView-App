@@ -1,12 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel } from "https://esm.sh/@google/generative-ai";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Función para convertir una URL de datos (data URL) al formato que Gemini necesita
 function dataUrlToGenerativePart(dataUrl: string) {
   const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
   if (!match) {
@@ -23,7 +22,6 @@ function dataUrlToGenerativePart(dataUrl: string) {
 }
 
 serve(async (req) => {
-  // Manejar la solicitud pre-vuelo de CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -42,7 +40,17 @@ serve(async (req) => {
         throw new Error("La variable de entorno GEMINI_API_KEY no está configurada.");
     }
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    
+    let model: GenerativeModel;
+    try {
+      // Intento 1: Usar el modelo que solicitaste
+      model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+      console.log("Intentando con el modelo: gemini-2.5-pro");
+    } catch (error) {
+      // Fallback: Si el primer modelo no existe, usar el modelo de respaldo
+      console.warn("El modelo 'gemini-2.5-pro' no se encontró. Usando 'gemini-1.5-pro' como respaldo.", error.message);
+      model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    }
 
     const prompt = `
       Eres un experto en análisis de imágenes de georadar (GPR). Analiza la siguiente imagen GPR.
@@ -75,7 +83,6 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    // Registro de error mejorado para un mejor diagnóstico
     console.error("Error detallado en la función de análisis:", JSON.stringify(error, null, 2));
     return new Response(JSON.stringify({ error: `Error en el servidor: ${error.message}` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
