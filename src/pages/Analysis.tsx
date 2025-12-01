@@ -7,22 +7,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ThreeDViewer } from "@/components/ThreeDViewer";
-
-interface DetectedObject {
-  type: 'tuberia' | 'cavidad' | 'metalico' | 'cable';
-  position: [number, number, number];
-  dimensions: any;
-  material?: string;
-}
 
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
-  const [threeDData, setThreeDData] = useState<DetectedObject[] | null>(null);
   const { session, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -39,8 +29,7 @@ const Analysis = () => {
       reader.onloadend = () => {
         setImage(reader.result as string);
         setFileName(file.name);
-        setAnalysisResult(null);
-        setThreeDData(null);
+        setAnalysisResult(null); // Limpiar resultado anterior al subir nueva imagen
       };
       reader.readAsDataURL(file);
     }
@@ -52,7 +41,6 @@ const Analysis = () => {
     const toastId = showLoading("Analizando imagen con IA...");
     setIsAnalyzing(true);
     setAnalysisResult(null);
-    setThreeDData(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('analyze-image', {
@@ -60,19 +48,12 @@ const Analysis = () => {
       });
 
       if (error) throw error;
-      
-      if (data.description && data.volume_3d) {
-        setAnalysisResult(data.description);
-        setThreeDData(data.volume_3d);
-        showSuccess("Análisis completado.");
-      } else {
-        throw new Error("La respuesta de la IA no tiene el formato esperado.");
-      }
+
+      setAnalysisResult(data.description);
+      showSuccess("Análisis completado.");
     } catch (error: any) {
       console.error("Error analyzing image:", error);
       showError(error.message || "Ocurrió un error durante el análisis.");
-      setAnalysisResult("Error en el análisis. Por favor, inténtalo de nuevo.");
-      setThreeDData(null);
     } finally {
       dismissToast(toastId);
       setIsAnalyzing(false);
@@ -139,25 +120,8 @@ const Analysis = () => {
 
         {analysisResult && (
           <Card className="mt-8 bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
-            <CardHeader className="flex flex-row justify-between items-center">
+            <CardHeader>
               <CardTitle className="text-2xl text-[#00FF7F]">Resultado del Análisis</CardTitle>
-              {threeDData && threeDData.length > 0 && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="bg-transparent border-[#00FF7F]/30 hover:bg-[#00FF7F]/10 text-[#00FF7F]">
-                      Ver en 3D
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[70vh] flex flex-col bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
-                    <DialogHeader>
-                      <DialogTitle className="text-[#00FF7F]">Visualización 3D del Subsuelo</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-grow min-h-0">
-                      <ThreeDViewer data={threeDData} />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
             </CardHeader>
             <CardContent>
               <p className="text-gray-300 whitespace-pre-wrap">{analysisResult}</p>
