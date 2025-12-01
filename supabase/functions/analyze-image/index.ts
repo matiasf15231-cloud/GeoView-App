@@ -42,7 +42,7 @@ serve(async (req) => {
         throw new Error("La variable de entorno GEMINI_API_KEY no está configurada.");
     }
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
     const prompt = "Eres un experto en análisis de imágenes de georadar (GPR). Describe la siguiente imagen GPR en detalle. Identifica cualquier anomalía, capas del subsuelo u objetos potenciales de interés. Proporciona una interpretación clara y concisa para un no experto.";
 
