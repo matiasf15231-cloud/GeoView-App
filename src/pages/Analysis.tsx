@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud, LogOut } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { UploadCloud, LogOut, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { showSuccess } from "@/utils/toast";
+import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const { user, session, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -26,15 +29,35 @@ const Analysis = () => {
       reader.onloadend = () => {
         setImage(reader.result as string);
         setFileName(file.name);
+        setAnalysisResult(null); // Limpiar resultado anterior al subir nueva imagen
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleAnalyze = () => {
-    // Placeholder for actual analysis logic
-    showSuccess(`Hola ${user?.email}! Listo para analizar la imagen.`);
-    console.log("User is logged in, proceeding with analysis...");
+  const handleAnalyze = async () => {
+    if (!image) return;
+
+    const toastId = showLoading("Analizando imagen con IA...");
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: { image },
+      });
+
+      if (error) throw error;
+
+      setAnalysisResult(data.description);
+      showSuccess("Análisis completado.");
+    } catch (error: any) {
+      console.error("Error analyzing image:", error);
+      showError(error.message || "Ocurrió un error durante el análisis.");
+    } finally {
+      dismissToast(toastId);
+      setIsAnalyzing(false);
+    }
   };
 
   if (loading || !session) {
@@ -46,13 +69,13 @@ const Analysis = () => {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0D0D0D] text-gray-200 p-4 font-sans">
+    <div className="min-h-screen w-full flex flex-col items-center bg-[#0D0D0D] text-gray-200 p-4 font-sans overflow-y-auto">
       <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,rgba(0,255,127,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,255,127,0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
       
-      <div className="relative z-10 w-full max-w-4xl">
+      <div className="relative z-10 w-full max-w-4xl my-8">
         <Card className="bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-3xl font-bold text-center text-[#00FF7F]">
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
+            <CardTitle className="text-3xl font-bold text-[#00FF7F]">
               Análisis de Imagen de Georadar
             </CardTitle>
             <div className="flex items-center gap-4">
@@ -62,7 +85,7 @@ const Analysis = () => {
                 </Button>
                 <Link to="/">
                     <Button variant="ghost" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
-                        Volver al inicio
+                        Inicio
                     </Button>
                 </Link>
             </div>
@@ -90,15 +113,27 @@ const Analysis = () => {
 
             <div className="text-center">
               <Button
-                disabled={!image}
+                disabled={!image || isAnalyzing}
                 onClick={handleAnalyze}
-                className="bg-[#00FF7F] text-[#0D0D0D] hover:bg-[#00FF7F]/80 rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)] disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
+                className="bg-[#00FF7F] text-[#0D0D0D] hover:bg-[#00FF7F]/80 rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)] disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2"
               >
-                Analizar Imagen
+                {isAnalyzing && <Loader2 className="h-5 w-5 animate-spin" />}
+                {isAnalyzing ? "Analizando..." : "Analizar Imagen"}
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {analysisResult && (
+          <Card className="mt-8 bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#00FF7F]">Resultado del Análisis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 whitespace-pre-wrap">{analysisResult}</p>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="mt-8 text-center text-gray-400">
           <p className="text-sm">Ejemplo de imagen para análisis:</p>
