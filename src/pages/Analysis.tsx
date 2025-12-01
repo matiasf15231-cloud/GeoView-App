@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud, Home, Loader2, Cube } from "lucide-react";
+import { UploadCloud, Home, Loader2, Box } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
@@ -129,7 +129,7 @@ const Analysis = () => {
               <CardTitle className="text-2xl text-[#00FF7F]">Resultado del Análisis</CardTitle>
               <Link to="/vista3Danalisis" state={{ data: analysisResult.volumen_3d }}>
                 <Button variant="outline" className="bg-transparent border-[#00FF7F]/30 hover:bg-[#00FF7F]/10 text-gray-200">
-                  <Cube className="mr-2 h-4 w-4" />
+                  <Box className="mr-2 h-4 w-4" />
                   Ver en 3D
                 </Button>
               </Link>
