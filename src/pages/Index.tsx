@@ -1,7 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
+  const { user, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStartAnalysis = () => {
+    if (user) {
+      navigate("/analysis");
+    } else {
+      signInWithGoogle();
+    }
+  };
+
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[#0D0D0D] text-gray-200 overflow-hidden font-sans">
       {/* Fondo sutil de grid tipo radar */}
@@ -24,13 +36,12 @@ const Index = () => {
         </p>
 
         <div className="mt-10">
-          <Link to="/analysis">
-            <Button
-              className="bg-transparent border-2 border-[#00FF7F] text-[#00FF7F] hover:bg-[#00FF7F] hover:text-[#0D0D0D] rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)]"
-            >
-              Comenzar análisis
-            </Button>
-          </Link>
+          <Button
+            onClick={handleStartAnalysis}
+            className="bg-transparent border-2 border-[#00FF7F] text-[#00FF7F] hover:bg-[#00FF7F] hover:text-[#0D0D0D] rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)]"
+          >
+            Comenzar análisis
+          </Button>
         </div>
       </div>
     </div>
