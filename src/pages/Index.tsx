@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { Settings } from "lucide-react";
+import { Settings, LogOut, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +10,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleStartAnalysis = () => {
     if (user) {
@@ -21,6 +33,11 @@ const Index = () => {
     } else {
       navigate("/login");
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    await deleteAccount();
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -48,6 +65,19 @@ const Index = () => {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-[#00FF7F]/20" />
+            {user && (
+              <>
+                <DropdownMenuItem onSelect={signOut} className="text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setIsDeleteDialogOpen(true)} className="text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Eliminar Cuenta</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#00FF7F]/20" />
+              </>
+            )}
             <DropdownMenuItem disabled className="text-gray-400 focus:bg-[#00FF7F]/10 focus:text-gray-200">
               Idioma (Próximamente)
             </DropdownMenuItem>
@@ -87,6 +117,21 @@ const Index = () => {
           </Button>
         </div>
       </div>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent className="bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Esta acción no se puede deshacer. Esto eliminará permanentemente tu
+              cuenta y tus datos de nuestros servidores.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border border-gray-500 hover:bg-gray-700 text-gray-200">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700 text-white">Continuar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

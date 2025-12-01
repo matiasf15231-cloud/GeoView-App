@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { UploadCloud, LogOut, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UploadCloud, Home, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showLoading, dismissToast, showSuccess, showError } from "@/utils/toast";
@@ -13,7 +13,7 @@ const Analysis = () => {
   const [fileName, setFileName] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
-  const { user, session, loading, signOut } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,17 +78,11 @@ const Analysis = () => {
             <CardTitle className="text-3xl font-bold text-[#00FF7F]">
               Análisis de Imagen de Georadar
             </CardTitle>
-            <div className="flex items-center gap-4">
-                <p className="text-sm text-gray-400 hidden sm:block">{user?.email}</p>
-                <Button onClick={signOut} variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
-                    <LogOut className="h-5 w-5" />
+            <Link to="/">
+                <Button variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
+                    <Home className="h-5 w-5" />
                 </Button>
-                <Link to="/">
-                    <Button variant="ghost" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
-                        Inicio
-                    </Button>
-                </Link>
-            </div>
+            </Link>
           </CardHeader>
           <CardContent className="space-y-8 flex flex-col items-center">
             

@@ -11,6 +11,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, metadata: { firstName: string, lastName: string }) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,6 +100,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteAccount = async () => {
+    const toastId = showLoading('Eliminando tu cuenta...');
+    try {
+      const { error } = await supabase.functions.invoke('delete-user');
+      if (error) throw error;
+      await signOut();
+      showSuccess('Tu cuenta ha sido eliminada permanentemente.');
+    } catch (error: any) {
+      showError(error.message || 'No se pudo eliminar la cuenta.');
+    } finally {
+      dismissToast(toastId);
+    }
+  };
+
   const value = {
     user,
     session,
@@ -107,6 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    deleteAccount,
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
