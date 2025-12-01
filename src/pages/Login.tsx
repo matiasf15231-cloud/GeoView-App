@@ -37,12 +37,6 @@ const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const GoogleIcon = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.6 1.84-4.84 1.84-5.84 0-10.62-4.7-10.62-10.52s4.78-10.52 10.62-10.52c3.36 0 5.64 1.44 6.96 2.64l2.32-2.32C19.82 1.29 16.71 0 12.48 0 5.8 0 0 5.6 0 12.32s5.8 12.32 12.48 12.32c6.96 0 12-4.82 12-11.92 0-.8-.08-1.6-.22-2.4H12.48z" />
-    </svg>
-);
-
 export default function Login() {
   const { session, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -86,7 +80,7 @@ export default function Login() {
           </CardHeader>
           <CardContent className="space-y-4 px-8 pt-4">
             <Button variant="outline" className="w-full bg-transparent border-[#00FF7F]/30 hover:bg-[#00FF7F]/10 text-gray-200" onClick={signInWithGoogle}>
-                <GoogleIcon className="mr-2 h-4 w-4" />
+                <img src="/google-logo.webp" alt="Google logo" className="mr-2 h-4 w-4" />
                 Continuar con Google
             </Button>
             <div className="relative">
