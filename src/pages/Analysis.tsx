@@ -25,6 +25,14 @@ const Analysis = () => {
     }
   }, [session, loading, navigate]);
 
+  // Este useEffect se encarga de mostrar la notificación de error de forma segura.
+  useEffect(() => {
+    // Solo se ejecuta si hay un mensaje de error en el estado.
+    if (analysisError) {
+      showError(analysisError);
+    }
+  }, [analysisError]); // Se activa solo cuando 'analysisError' cambia.
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -42,7 +50,7 @@ const Analysis = () => {
   const handleAnalyze = async () => {
     if (!image) return;
     setIsLoadingAnalysis(true);
-    setAnalysisError(null);
+    setAnalysisError(null); // Limpiamos el error anterior al iniciar un nuevo análisis.
     try {
       const { data, error } = await supabase.functions.invoke('interpret-georadar', {
         body: { image },
@@ -59,9 +67,8 @@ const Analysis = () => {
       setAnalysisResult(data);
     } catch (err: any) {
       const errorMessage = err.message || "Ocurrió un error desconocido durante el análisis.";
+      // Solo actualizamos el estado. El useEffect se encargará de la notificación.
       setAnalysisError(errorMessage);
-      // Usamos setTimeout para asegurar que la notificación se ejecute después del ciclo de renderizado actual.
-      setTimeout(() => showError(errorMessage), 0);
     } finally {
       setIsLoadingAnalysis(false);
     }
