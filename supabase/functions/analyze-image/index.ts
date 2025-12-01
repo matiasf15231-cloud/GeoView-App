@@ -75,8 +75,9 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    // Registro de error mejorado para un mejor diagnóstico
+    console.error("Error detallado en la función de análisis:", JSON.stringify(error, null, 2));
+    return new Response(JSON.stringify({ error: `Error en el servidor: ${error.message}` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
