@@ -9,7 +9,6 @@ const Index = () => {
       <div className="relative z-10 text-center p-4">
         <h1
           className="text-7xl md:text-9xl font-bold text-[#00FF7F] tracking-wider"
-          style={{ textShadow: "0 0 8px #00FF7F, 0 0 16px #00FF7F" }}
         >
           GeoView
         </h1>
