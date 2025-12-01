@@ -9,18 +9,12 @@ import { showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import ThreeDViewer from "@/components/ThreeDViewer";
 
-type ToastState = {
-  type: 'error';
-  message: string;
-} | null;
-
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [toast, setToast] = useState<ToastState>(null);
 
   const { user, session, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -30,15 +24,6 @@ const Analysis = () => {
       navigate('/login');
     }
   }, [session, loading, navigate]);
-
-  useEffect(() => {
-    if (toast) {
-      if (toast.type === 'error') {
-        showError(toast.message);
-      }
-      setToast(null);
-    }
-  }, [toast]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -75,7 +60,8 @@ const Analysis = () => {
     } catch (err: any) {
       const errorMessage = err.message || "Ocurrió un error desconocido durante el análisis.";
       setAnalysisError(errorMessage);
-      setToast({ type: 'error', message: errorMessage });
+      // Usamos setTimeout para asegurar que la notificación se ejecute después del ciclo de renderizado actual.
+      setTimeout(() => showError(errorMessage), 0);
     } finally {
       setIsLoadingAnalysis(false);
     }
