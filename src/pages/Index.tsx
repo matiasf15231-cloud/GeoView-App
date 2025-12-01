@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -23,11 +24,13 @@ const Index = () => {
         </p>
 
         <div className="mt-10">
-          <Button
-            className="bg-transparent border-2 border-[#00FF7F] text-[#00FF7F] hover:bg-[#00FF7F] hover:text-[#0D0D0D] rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)]"
-          >
-            Comenzar análisis
-          </Button>
+          <Link to="/analysis">
+            <Button
+              className="bg-transparent border-2 border-[#00FF7F] text-[#00FF7F] hover:bg-[#00FF7F] hover:text-[#0D0D0D] rounded-lg px-8 py-6 text-lg font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(0,255,127,0.4)] hover:shadow-[0_0_25px_rgba(0,255,127,0.7)]"
+            >
+              Comenzar análisis
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
