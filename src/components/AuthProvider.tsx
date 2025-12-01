@@ -8,6 +8,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, metadata: { firstName: string, lastName: string }) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -44,11 +46,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         provider: 'google',
       });
       if (error) throw error;
-      // The user will be redirected, so we might not see the success toast here.
-      // Supabase handles the redirect back to the app.
     } catch (error: any) {
       dismissToast(toastId);
       showError(error.error_description || error.message);
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    const toastId = showLoading('Iniciando sesión...');
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      showSuccess('¡Bienvenido de nuevo!');
+    } catch (error: any) {
+      showError(error.error_description || error.message);
+    } finally {
+      dismissToast(toastId);
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, metadata: { firstName: string, lastName: string }) => {
+    const toastId = showLoading('Creando tu cuenta...');
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: metadata.firstName,
+            last_name: metadata.lastName,
+          }
+        }
+      });
+      if (error) throw error;
+      showSuccess('¡Cuenta creada! Revisa tu correo para verificar tu cuenta.');
+    } catch (error: any) {
+      showError(error.error_description || error.message);
+    } finally {
+      dismissToast(toastId);
     }
   };
 
@@ -69,6 +104,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     session,
     loading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
   };
 
