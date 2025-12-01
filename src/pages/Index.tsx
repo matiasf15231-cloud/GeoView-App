@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleStartAnalysis = () => {
     if (user) {
       navigate("/analysis");
     } else {
-      signInWithGoogle();
+      navigate("/login");
     }
   };
 

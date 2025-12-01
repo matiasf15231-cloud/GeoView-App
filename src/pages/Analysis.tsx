@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud } from "lucide-react";
-import { Link } from "react-router-dom";
+import { UploadCloud, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { showSuccess } from "@/utils/toast";
 
 const Analysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
-  const { user, signInWithGoogle } = useAuth();
+  const { user, session, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !session) {
+      navigate('/login');
+    }
+  }, [session, loading, navigate]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -24,15 +31,19 @@ const Analysis = () => {
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!user) {
-      await signInWithGoogle();
-    } else {
-      // Placeholder for actual analysis logic
-      showSuccess(`Hola ${user.email}! Listo para analizar la imagen.`);
-      console.log("User is logged in, proceeding with analysis...");
-    }
+  const handleAnalyze = () => {
+    // Placeholder for actual analysis logic
+    showSuccess(`Hola ${user?.email}! Listo para analizar la imagen.`);
+    console.log("User is logged in, proceeding with analysis...");
   };
+
+  if (loading || !session) {
+    return (
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0D0D0D] text-gray-200 p-4 font-sans">
+            <p>Cargando...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0D0D0D] text-gray-200 p-4 font-sans">
@@ -44,11 +55,17 @@ const Analysis = () => {
             <CardTitle className="text-3xl font-bold text-center text-[#00FF7F]">
               Análisis de Imagen de Georadar
             </CardTitle>
-            <Link to="/">
-              <Button variant="ghost" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
-                Volver al inicio
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+                <p className="text-sm text-gray-400 hidden sm:block">{user?.email}</p>
+                <Button onClick={signOut} variant="ghost" size="icon" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
+                    <LogOut className="h-5 w-5" />
+                </Button>
+                <Link to="/">
+                    <Button variant="ghost" className="text-[#00FF7F] hover:bg-[#00FF7F]/10 hover:text-[#00FF7F]">
+                        Volver al inicio
+                    </Button>
+                </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-8 flex flex-col items-center">
             
