@@ -41,7 +41,7 @@ const Vista3D = ({ data, maxDepth }: Vista3DProps) => {
   const handleMouseUp = () => { isDragging.current = false; };
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    setZoom(prev => Math.max(0.2, Math.min(3, prev - e.deltaY * 0.001)));
+    setZoom(prev => Math.max(0.1, Math.min(5, prev - e.deltaY * 0.001)));
   };
 
   useEffect(() => {
@@ -188,7 +188,7 @@ const Vista3D = ({ data, maxDepth }: Vista3DProps) => {
 
   return (
     <div
-      className="w-full h-full border border-[#00FF7F]/30 bg-[#1A1A1A]/80 rounded-lg cursor-grab active:cursor-grabbing touch-none"
+      className="w-full h-full border border-[#00FF7F]/30 bg-[#1A1A1A]/80 rounded-lg cursor-grab active-cursor-grabbing touch-none"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
