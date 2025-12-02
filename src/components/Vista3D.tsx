@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 interface Objeto3D {
-  type: 'pipe' | 'cavity' | 'metal' | 'cable' | 'rock' | string; // Acepta otros strings para 'anomaly'
+  type: 'pipe' | 'cavity' | 'metal' | 'cable' | 'rock' | string;
   position: { x: number; y: number; z: number };
   size: { width: number; height: number; depth: number };
 }
@@ -165,21 +165,23 @@ const Vista3D = ({ data, maxDepth }: Vista3DProps) => {
         return posA.z - posB.z;
     });
 
-    const elementsToRender = [...sortedData.map(obj => ({...obj, type: 'object'})), ...sortedData.map(obj => ({...obj, type: 'label'}))];
+    const elementsToRender = [
+      ...sortedData.map(obj => ({...obj, renderType: 'object'})), 
+      ...sortedData.map(obj => ({...obj, renderType: 'label'}))
+    ];
+    
     elementsToRender.sort((a, b) => {
         const posA = project(a.position.x - 50, a.position.y - 50, a.position.z - 50);
         const posB = project(b.position.x - 50, b.position.y - 50, b.position.z - 50);
-        if (a.type === 'label') posA.depth += 1000; // Render labels on top
-        if (b.type === 'label') posB.depth += 1000;
+        if (a.renderType === 'label') posA.depth += 1000; // Render labels on top
+        if (b.renderType === 'label') posB.depth += 1000;
         return posB.depth - posA.depth;
     });
 
     elementsToRender.forEach(el => {
-        if (el.type === 'label') {
+        if (el.renderType === 'label') {
             drawLabel(el);
         } else {
-            // Aquí podrías añadir lógica para otras formas (esfera, cilindro)
-            // Por simplicidad, usamos cubos para todos por ahora.
             drawCube(el);
         }
     });
