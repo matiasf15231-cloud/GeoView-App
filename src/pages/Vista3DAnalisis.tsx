@@ -3,6 +3,7 @@ import Vista3D from "@/components/Vista3D";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, HelpCircle, Layers, Maximize, Ruler } from "lucide-react";
 
 // Mapeo de tipos a traducciones y colores para el panel
@@ -48,13 +49,25 @@ const Vista3DAnalisis = () => {
         </div>
         
         <aside className="w-full md:w-1/3">
-          <Card className="bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200 h-full">
+          <Card className="bg-[#1A1A1A] border-[#00FF7F]/20 text-gray-200 h-full flex flex-col">
             <CardHeader>
               <CardTitle className="text-xl text-[#00FF7F]">Resumen del Análisis</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow flex flex-col">
+              <div className="mb-4">
+                <h4 className="text-md font-semibold text-gray-300 mb-3">Leyenda de Colores</h4>
+                <div className="space-y-2">
+                  {Object.values(objectDetails).map((detail) => (
+                    <div key={detail.name} className="flex items-center gap-3">
+                      <div className={`w-4 h-4 rounded-full ${detail.color}`}></div>
+                      <span className="text-sm text-gray-300">{detail.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator className="my-4 bg-[#00FF7F]/20" />
               {analysisData.length > 0 ? (
-                <ScrollArea className="h-[65vh]">
+                <ScrollArea className="flex-grow h-0">
                   <div className="space-y-4 pr-4">
                     {analysisData.map((item: any, index: number) => {
                       const details = objectDetails[item.type as keyof typeof objectDetails] || objectDetails.anomaly;
@@ -76,7 +89,7 @@ const Vista3DAnalisis = () => {
                   </div>
                 </ScrollArea>
               ) : (
-                 <div className="text-center text-gray-500 h-full flex flex-col justify-center items-center">
+                 <div className="text-center text-gray-500 h-full flex flex-col justify-center items-center flex-grow">
                     <HelpCircle className="w-10 h-10 mb-4"/>
                     <p>Los detalles de los objetos detectados aparecerán aquí.</p>
                  </div>
