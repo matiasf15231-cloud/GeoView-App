@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI, GenerativeModel } from "https://esm.sh/@google/generative-ai";
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,16 +41,8 @@ serve(async (req) => {
     }
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    let model: GenerativeModel;
-    try {
-      // Intento 1: Usar el modelo que solicitaste
-      model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-      console.log("Intentando con el modelo: gemini-2.5-pro");
-    } catch (error) {
-      // Fallback: Si el primer modelo no existe, usar el modelo de respaldo
-      console.warn("El modelo 'gemini-2.5-pro' no se encontró. Usando 'gemini-1.5-pro' como respaldo.", error.message);
-      model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-    }
+    // Asegurando el uso de Gemini 2.5 Pro como fue solicitado
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
     const prompt = `
       Eres un experto en análisis de imágenes de georadar (GPR). Analiza la siguiente imagen GPR.
